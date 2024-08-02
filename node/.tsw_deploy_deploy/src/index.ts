@@ -4,14 +4,14 @@ import { dag, Container, File, Directory, object, func } from "@dagger.io/dagger
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class NodeTools {
 
-  nodeVersion = "20.9.0"
+  
 
   /**
    * Build for production using node of file in source directory .node-version
    */
   @func()
-  buildNodeBackend(source: Directory, node: String = this.nodeVersion): Directory {
-    
+  buildBackend(source: Directory): Directory {
+    const nodeVersion = "20.9.0"
     const nodeCache = dag.cacheVolume("node")
 
     return dag
