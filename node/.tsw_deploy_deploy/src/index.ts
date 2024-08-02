@@ -45,4 +45,83 @@ class NodeTools {
 
     return this.archiveBackend(build)
   }
+
+  /**
+   * Upload capze to SSH server
+   */
+  // @func()
+  // async uploadCapze(esshConfig: File, awsCredentials: File, sshKey: File): Promise<void> {
+  
+  //   const prepare = await dag.container()
+  //     .from("digiosysops/deploy-tools:latest")
+  //     .withFile("/root/.essh/config.lua", esshConfig)
+  //     .withFile("/root/.aws/credentials", awsCredentials)
+  //     .withFile("/root/.ssh/id_rsa", sshKey)
+  //     .withExec(["essh", "--exec", "scp", "-F", "$ESSH_SSH_CONFIG", "/usr/local/bin/capze", "tsk-aws-API-V2:~/deploy/"]).stdout()
+
+  //   return
+  // }
+
+  /**
+   * Upload exported tgz file to SSH server
+   */
+  @func()
+  async uploadTgz(tgz: File, esshConfig: File, awsCredentials: File, sshKey: File): Promise<void> {
+    const name = await tgz.name()
+  
+    const prepare = await dag.container()
+      .from("digiosysops/deploy-tools:latest")
+      .withFile(`/src/${name}`, tgz)
+      .withFile("/root/.essh/config.lua", esshConfig)
+      .withFile("/root/.aws/credentials", awsCredentials)
+      .withFile("/root/.ssh/id_rsa", sshKey)
+      .withExec(["essh", "--exec", "scp", "-F", "$ESSH_SSH_CONFIG", `/src/${name}`, "tsk-aws-API-V2:~/.deploy/"]).stdout()
+
+    return
+  }
+
+  /**
+   * Prepare the backend for deployment
+   */
+  @func()
+  async prepareBackend(esshConfig: File, awsCredentials: File, sshKey: File): Promise<void> {
+    dag.container()
+      .from("digiosysops/deploy-tools:latest")
+      .withFile("/root/.essh/config.lua", esshConfig)
+      .withFile("/root/.aws/credentials", awsCredentials)
+      .withFile("/root/.ssh/id_rsa", sshKey)
+      .withExec(["essh", "deploy:prepare"]).stdout()
+
+    return
+  }
+
+  /**
+   * Extract the backend deploy
+   */
+  @func()
+  async extractBackend(esshConfig: File, awsCredentials: File, sshKey: File): Promise<void> {
+
+    dag.container()
+      .from("digiosysops/deploy-tools:latest")
+      .withFile("/root/.essh/config.lua", esshConfig)
+      .withFile("/root/.aws/credentials", awsCredentials)
+      .withFile("/root/.ssh/id_rsa", sshKey)
+      .withExec(["essh", "deploy:extract"]).stdout()
+
+    return
+  }
+
+  /**
+   * Deploy the backend
+   */
+  @func()
+  async deployBackend(source: Directory, esshConfig: File, awsCredentials: File, sshKey: File): Promise<void> {
+    const tgz = this.exportTgz(source)
+    await this.prepareBackend(esshConfig, awsCredentials, sshKey)
+    // await this.uploadCapze(esshConfig, awsCredentials, sshKey)
+    await this.uploadTgz(tgz, esshConfig, awsCredentials, sshKey)
+    await this.extractBackend(esshConfig, awsCredentials, sshKey)
+
+    return
+  }
 }
