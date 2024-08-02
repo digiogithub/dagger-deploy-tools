@@ -1,0 +1,12 @@
+{
+  "name": "NodeTools",
+  "sdk": "typescript",
+  "dependencies": [
+    {
+      "name": "archivist",
+      "source": "github.com/sagikazarmark/daggerverse/archivist@8f444e2c2b8e8162cea76d702086034ed3edc4f1"
+    }
+  ],
+  "source": ".tsw_deploy_deploy",
+  "engineVersion": "v0.9.10"
+}
