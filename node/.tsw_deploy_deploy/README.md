@@ -27,7 +27,7 @@ dagger call export-tgz --source=. export --path=./archive.tgz
 Please run this command in the same folder of source project
 
 ```
-dagger -m /www/TheSaiyanKiwi/dagger-deploy-tools/node call deploy-backend \
+dagger -m github.com/digiogithub/dagger-deploy-tools/node call deploy-backend \
     --source=. --essh-config /path/esshconfig.lua \
     --aws-credentials /path/aws_credentials \
     --ssh-key /path/ssh_key \
