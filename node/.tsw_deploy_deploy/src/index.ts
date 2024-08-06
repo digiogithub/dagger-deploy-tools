@@ -108,4 +108,19 @@ class NodeTools {
 
     return
   }
+
+  /**
+   * Rollback the backend
+   */
+  @func()
+  async rollbackBackend(esshConfig: File, awsCredentials: File, sshKey: File, hostname: string): Promise<void> {
+    dag.container()
+      .from("digiosysops/deploy-tools:latest")
+      .withFile("/root/.essh/config.lua", esshConfig)
+      .withFile("/root/.aws/credentials", awsCredentials)
+      .withFile("/root/.ssh/id_rsa", sshKey)
+      .withExec(["essh", "deploy:rollback", hostname]).stdout()
+
+    return
+  }
 }
