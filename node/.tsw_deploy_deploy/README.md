@@ -21,3 +21,16 @@ Export build file as tgz
 ```
 dagger call export-tgz --source=. export --path=./archive.tgz
 ```
+
+## Example for deploying node backend
+
+Please run this command in the same folder of source project
+
+```
+dagger -m /www/TheSaiyanKiwi/dagger-deploy-tools/node call deploy-backend \
+    --source=. --essh-config /www/TheSaiyanKiwi/devops/esshconfig.lua \
+    --aws-credentials /www/TheSaiyanKiwi/devops/aws_credentials \
+    --ssh-key /www/TheSaiyanKiwi/devops/ssh_key \
+    --hostname tsk-aws-API-V2
+
+```
