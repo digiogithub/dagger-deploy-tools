@@ -10,9 +10,14 @@ class NodeTools {
    * Build for production using node of file in source directory .node-version
    */
   @func()
-  buildBackend(source: Directory): Directory {
+  buildBackend(source: Directory, buildTask: string = "build:prod", forceInstallNpm: boolean = false): Directory {
     const nodeVersion = "20.9.0"
     const nodeCache = dag.cacheVolume("node")
+
+    let npmInstallCli: string[] = ["npm", "install"]
+    if (forceInstallNpm) {
+      npmInstallCli = ["npm", "install", "--force"]
+    }
 
     return dag
       .container()
@@ -20,8 +25,8 @@ class NodeTools {
       .withDirectory("/src", source)
       .withMountedCache("/src/node_modules", nodeCache)
       .withWorkdir("/src")
-      .withExec(["npm", "install"])
-      .withExec(["npm", "run", "build:prod"])
+      .withExec(npmInstallCli)
+      .withExec(["npm", "run", buildTask])
       .directory("/src/dist")
   }
 
@@ -40,8 +45,8 @@ class NodeTools {
    * Exports the build directory as zip file
    */
   @func()
-  exportTgz(source: Directory): File {
-    const build = this.buildBackend(source)
+  exportTgz(source: Directory, buildTask: string = "build:prod", forceInstallNpm: boolean = false): File {
+    const build = this.buildBackend(source, buildTask, forceInstallNpm)
 
     return this.archiveBackend(build)
   }
@@ -100,8 +105,8 @@ class NodeTools {
    * Deploy the backend
    */
   @func()
-  async deployBackend(source: Directory, esshConfig: File, awsCredentials: File, sshKey: File, hostname: string): Promise<void> {
-    const tgz = this.exportTgz(source)
+  async deployBackend(source: Directory, esshConfig: File, awsCredentials: File, sshKey: File, hostname: string, buildTask: string = "build:prod", forceInstallNpm: boolean = false): Promise<void> {
+    const tgz = this.exportTgz(source, buildTask, forceInstallNpm)
     await this.prepareBackend(esshConfig, awsCredentials, sshKey, hostname)
     await this.uploadTgz(tgz, esshConfig, awsCredentials, sshKey, hostname)
     await this.extractBackend(esshConfig, awsCredentials, sshKey, hostname)
