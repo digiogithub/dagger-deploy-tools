@@ -21,12 +21,12 @@ class Meteor {
    * Returns a container that echoes whatever string argument is provided
    */
   @func()
-  buildBundle(source: Directory): Container {
+  buildBundle(source: Directory, builderImage: string = "digiosysops/meteor-builder:1.7.0.5"): Container {
     const nodeModulesBuild = dag.cacheVolume("node-modules-build")
     const nodeModulesBundle = dag.cacheVolume("node-modules-bundle")
     const meteorCache = dag.cacheVolume("meteor")
 
-    const buildContainer: Container = dag.container().from("digiosysops/meteor-builder:1.7.0.5")
+    const buildContainer: Container = dag.container().from(builderImage)
       .withDirectory("/opt/meteor/src", source, {owner: "meteor"})
       .withWorkdir("/opt/meteor/src/")
       .withUser("meteor")
@@ -34,6 +34,7 @@ class Meteor {
       .withMountedCache("/home/meteor/.meteor/packages/meteor", meteorCache, {owner: "meteor"})
       .withExec(["npm", "install"])
       .withEnvVariable("NODE_TLS_REJECT_UNAUTHORIZED", "0")
+      .withEnvVariable("METEOR_DISABLE_OPTIMISTIC_CACHING", "1")
       .withExec([
         "meteor", "build", "/opt/meteor", "--architecture", "os.linux.x86_64", "--server-only"])
       .withoutEnvVariable("NODE_TLS_REJECT_UNAUTHORIZED")
@@ -75,9 +76,9 @@ class Meteor {
    * Returns the final container with the bundle builded
    */
   @func()
-  build(source: Directory): Container {
+  build(source: Directory, builderImage: string = "digiosysops/meteor-builder:1.7.0.5"): Container {
     const finalContainer = this.buildAndExport(
-      this.buildBundle(source)
+      this.buildBundle(source, builderImage)
     )
 
     return finalContainer

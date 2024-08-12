@@ -65,7 +65,6 @@ class NodeTools {
       .withFile("/root/.aws/credentials", awsCredentials)
       .withFile("/root/.ssh/id_rsa", sshKey)
       .withExec(["essh", "deploy:upload", hostname]).stdout()
-      //.withExec(["essh", "--exec", "scp", "-F", "$ESSH_SSH_CONFIG", `/src/${name}`, "tsk-aws-API-V2:~/.deploy/"]).stdout()
 
     return
   }
