@@ -51,13 +51,20 @@ class Meteor {
    * Returns the final container with the bundle
    */
   @func()
-  buildAndExport(bundle: Container): Container {
+  buildAndExport(bundle: Container, legacyFix: boolean = false): Container {
+    let container: Container
 
-    return dag.container().from("node:8.11.4-stretch")
-      .withWorkdir("/opt/meteor")
-      .withExec(["apt-key", "adv", "--keyserver", "keyring.debian.org", "--recv-keys", "5C808C2B65558117"])
-      .withExec(["/bin/sh", "-c", "`echo \"deb http://archive.debian.org/debian/ stretch main\ndeb-src http://archive.debian.org/debian/ stretch main\ndeb http://archive.deb-multimedia.org/ stretch main non-free\" > /etc/apt/sources.list`"])
-      .withExec(["apt-get", "update"])
+    if (legacyFix) {
+      container = dag.container().from("node:8.11.4-stretch")
+        .withWorkdir("/opt/meteor")
+        .withExec(["apt-key", "adv", "--keyserver", "keyring.debian.org", "--recv-keys", "5C808C2B65558117"])
+        .withExec(["/bin/sh", "-c", "`echo \"deb http://archive.debian.org/debian/ stretch main\ndeb-src http://archive.debian.org/debian/ stretch main\ndeb http://archive.deb-multimedia.org/ stretch main non-free\" > /etc/apt/sources.list`"])
+
+    }else{
+      container = dag.container().from("node:12.20.1-buster-slim")
+    }
+
+    return container.withExec(["apt-get", "update"])
       .withExec([ 
         "apt-get", "install", "-y", "--force-yes", "-f", "ffmpeg"])
       .withExec([
@@ -76,9 +83,10 @@ class Meteor {
    * Returns the final container with the bundle builded
    */
   @func()
-  build(source: Directory, builderImage: string = "digiosysops/meteor-builder:1.7.0.5"): Container {
+  build(source: Directory, builderImage: string = "digiosysops/meteor-builder:1.7.0.5", legacyFix: boolean = false): Container {
     const finalContainer = this.buildAndExport(
-      this.buildBundle(source, builderImage)
+      this.buildBundle(source, builderImage),
+      legacyFix
     )
 
     return finalContainer
@@ -88,11 +96,11 @@ class Meteor {
    * Tag image and push to registry
    */
   @func()
-  async tagAndPush(source: Directory, builderImage: string = "digiosysops/meteor-builder:1.7.0.5", registryPath: string, registryLogin: string, registryPassword: Secret, tagVersion: string): Promise<string[]> {
+  async tagAndPush(source: Directory, builderImage: string = "digiosysops/meteor-builder:1.7.0.5", registryPath: string, registryLogin: string, registryPassword: Secret, tagVersion: string, legacyFix: boolean = false): Promise<string[]> {
     //get from registryPath the registry domain uri
     const registry = registryPath.split("/")[0]
 
-    const finalContainer = this.build(source, builderImage).withRegistryAuth(registry, registryLogin, registryPassword)
+    const finalContainer = this.build(source, builderImage, legacyFix).withRegistryAuth(registry, registryLogin, registryPassword)
 
     const tags = ["latest", tagVersion]
 
