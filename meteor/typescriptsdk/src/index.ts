@@ -62,6 +62,7 @@ class Meteor {
 
     }else{
       container = dag.container().from("node:12.20.1-buster-slim")
+        .withWorkdir("/opt/meteor")
     }
 
     return container.withExec(["apt-get", "update"])
