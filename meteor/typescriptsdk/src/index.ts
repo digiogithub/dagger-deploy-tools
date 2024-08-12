@@ -13,7 +13,7 @@
  * rest is a long description with more detail on the module's purpose or usage,
  * if appropriate. All modules should have a short description.
  */
-import { dag, Container, Directory, object, func } from "@dagger.io/dagger"
+import { dag, Container, Directory, Secret, object, func } from "@dagger.io/dagger"
 
 @object()
 class Meteor {
@@ -82,5 +82,28 @@ class Meteor {
     )
 
     return finalContainer
+  }
+
+  /**
+   * Tag image and push to registry
+   */
+  @func()
+  async tagAndPush(source: Directory, builderImage: string = "digiosysops/meteor-builder:1.7.0.5", registryPath: string, registryLogin: string, registryPassword: Secret, tagVersion: string): Promise<string[]> {
+    //get from registryPath the registry domain uri
+    const registry = registryPath.split("/")[0]
+
+    const finalContainer = this.build(source, builderImage).withRegistryAuth(registry, registryLogin, registryPassword)
+
+    const tags = ["latest", tagVersion]
+
+    const addr: string[] = []
+    for (const tag in tags) {
+      const a = await finalContainer.publish(
+        `${registryPath}:${tags[tag]}`,
+      )
+      addr.push(a)
+    }
+
+    return addr
   }
 }
