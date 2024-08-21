@@ -10,8 +10,6 @@ import {
 @object()
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class NodeTools {
-  private static readonly CACHEBUSTER_ENABLED = true;
-
   /**
    * Build for production
    */
@@ -136,11 +134,12 @@ class NodeTools {
     awsCredentials: File,
     sshKey: File,
     hostname: string,
+    cacheEnabled: boolean = false,
   ): Promise<string> {
     const name = await tgz.name();
 
     let cacheBuster = "";
-    if (NodeTools.CACHEBUSTER_ENABLED) {
+    if (!cacheEnabled) {
       cacheBuster = Date.now().toString();
     }
 
@@ -187,9 +186,10 @@ class NodeTools {
     awsCredentials: File,
     sshKey: File,
     hostname: string,
+    cacheEnabled: boolean = false,
   ): Promise<string> {
     let cacheBuster = "";
-    if (NodeTools.CACHEBUSTER_ENABLED) {
+    if (!cacheEnabled) {
       cacheBuster = Date.now().toString();
     }
 
@@ -217,15 +217,24 @@ class NodeTools {
     buildTask: string = "build:prod",
     forceInstallNpm: boolean = false,
     includeDirs: string = "",
+    cacheEnabled: boolean = false,
   ): Promise<string> {
     const tgz = this.exportTgz(source, buildTask, forceInstallNpm, includeDirs);
     await this.prepareBackend(esshConfig, awsCredentials, sshKey, hostname);
-    await this.uploadTgz(tgz, esshConfig, awsCredentials, sshKey, hostname);
+    await this.uploadTgz(
+      tgz,
+      esshConfig,
+      awsCredentials,
+      sshKey,
+      hostname,
+      cacheEnabled,
+    );
     return await this.extractBackend(
       esshConfig,
       awsCredentials,
       sshKey,
       hostname,
+      cacheEnabled,
     );
   }
 
@@ -238,13 +247,20 @@ class NodeTools {
     awsCredentials: File,
     sshKey: File,
     hostname: string,
+    cacheEnabled: boolean = false,
   ): Promise<string> {
+    let cacheBuster = "";
+    if (!cacheEnabled) {
+      cacheBuster = Date.now().toString();
+    }
+
     return dag
       .container()
       .from("digiosysops/deploy-tools:latest")
       .withFile("/root/.essh/config.lua", esshConfig)
       .withFile("/root/.aws/credentials", awsCredentials)
       .withFile("/root/.ssh/id_rsa", sshKey)
+      .withEnvVariable("CACHEBUSTER", cacheBuster)
       .withExec(["essh", "deploy:rollback", hostname])
       .stdout();
   }
@@ -259,9 +275,10 @@ class NodeTools {
     sshKey: File,
     hostname: string,
     task: string,
+    cacheEnabled: boolean = false,
   ): Promise<string> {
     let cacheBuster = "";
-    if (NodeTools.CACHEBUSTER_ENABLED) {
+    if (!cacheEnabled) {
       cacheBuster = Date.now().toString();
     }
 
