@@ -1,12 +1,6 @@
-# Dagger deploy
+# Node.js project builds with Dagger
 
-This code need [Dagger Engine installed](https://docs.dagger.io/quickstart/cli/) and Docker 
-
-## Extensions installed
-
-```
-dagger install github.com/sagikazarmark/daggerverse/archivist@v0.5.0
-```
+This code need [Dagger Engine installed](https://docs.dagger.io/quickstart/cli/) and Docker
 
 ## Generating build files
 

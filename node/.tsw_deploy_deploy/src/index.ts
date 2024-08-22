@@ -11,7 +11,14 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class NodeTools {
   /**
-   * Build for production
+   * Build for production, this is a legacy function
+   *
+   * @param source Source directory
+   * @param buildTask Build task to run in package.json
+   * @param forceInstallNpm Force install npm packages (depends the project)
+   * @param includeNodeModules Include node_modules directory in the build
+   * @param nodeVersion Node version to use
+   * @returns Directory
    */
   @func()
   buildBackendLegacy(
@@ -52,6 +59,13 @@ class NodeTools {
 
   /**
    * Build for production using node of file in source directory .node-version
+   *
+   * @param source Source directory
+   * @param buildTask Build task to run in package.json
+   * @param forceInstallNpm Force install npm packages (depends the project)
+   * @param includeDirs Include directories in the build
+   * @param nodeVersion Node version to use
+   * @returns Directory
    */
   @func()
   buildBackend(
@@ -98,6 +112,9 @@ class NodeTools {
 
   /**
    * Zip the build directory
+   *
+   * @param build Build directory (output of buildBackend)
+   * @returns Zipped file
    */
   @func()
   archiveBackend(build: Directory): File {
@@ -106,6 +123,12 @@ class NodeTools {
 
   /**
    * Exports the build directory as zip file
+   *
+   * @param source Source directory
+   * @param buildTask Build task to run in package.json
+   * @param forceInstallNpm Force install npm packages (depends the project)
+   * @param includeDirs Include directories in the build
+   * @returns Exported tgz file
    */
   @func()
   exportTgz(
@@ -126,6 +149,14 @@ class NodeTools {
 
   /**
    * Upload exported tgz file to SSH server
+   *
+   * @param tgz Exported tgz file
+   * @param esshConfig eSSH configuration file
+   * @param awsCredentials AWS credentials file
+   * @param sshKey SSH key file
+   * @param hostname SSH hostname
+   * @param cacheEnabled Enable cache busting
+   * @returns Server output
    */
   @func()
   async uploadTgz(
@@ -159,6 +190,12 @@ class NodeTools {
 
   /**
    * Prepare the backend for deployment
+   *
+   * @param esshConfig Essh configuration file
+   * @param awsCredentials AWS credentials file
+   * @param sshKey SSH key file
+   * @param hostname SSH hostname
+   * @returns Server output
    */
   @func()
   async prepareBackend(
@@ -179,6 +216,13 @@ class NodeTools {
 
   /**
    * Extract the backend deploy
+   *
+   * @param esshConfig Essh configuration file
+   * @param awsCredentials AWS credentials file
+   * @param sshKey SSH key file
+   * @param hostname SSH hostname
+   * @param cacheEnabled Enable cache busting
+   * @returns Server output
    */
   @func()
   async extractBackend(
@@ -206,6 +250,17 @@ class NodeTools {
 
   /**
    * Deploy the backend
+   *
+   * @param source Source directory
+   * @param esshConfig Essh configuration file
+   * @param awsCredentials AWS credentials file
+   * @param sshKey SSH key file
+   * @param hostname SSH hostname
+   * @param buildTask Build task to run in package.json
+   * @param forceInstallNpm Force install npm packages (depends the project)
+   * @param includeDirs Include directories in the build
+   * @param cacheEnabled Enable cache busting
+   * @returns Deployment output
    */
   @func()
   async deployBackend(
@@ -240,6 +295,13 @@ class NodeTools {
 
   /**
    * Rollback the backend
+   *
+   * @param esshConfig Essh configuration file
+   * @param awsCredentials AWS credentials file
+   * @param sshKey SSH key file
+   * @param hostname SSH hostname
+   * @param cacheEnabled Enable cache busting
+   * @returns Rollback message
    */
   @func()
   async rollbackBackend(
@@ -267,6 +329,14 @@ class NodeTools {
 
   /**
    * Run essh task
+   *
+   * @param esshConfig Essh configuration file
+   * @param awsCredentials AWS credentials file
+   * @param sshKey SSH key file
+   * @param hostname SSH hostname
+   * @param task Task to run
+   * @param cacheEnabled Enable cache busting
+   * @returns Task output
    */
   @func()
   async runTask(
