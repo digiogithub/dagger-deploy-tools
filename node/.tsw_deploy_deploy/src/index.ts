@@ -64,6 +64,7 @@ class NodeTools {
    * @param buildTask Build task to run in package.json
    * @param forceInstallNpm Force install npm packages (depends the project)
    * @param includeDirs Include directories in the build
+   * @param includeFiles Include files in the build
    * @param nodeVersion Node version to use
    * @returns Directory
    */
@@ -73,6 +74,7 @@ class NodeTools {
     buildTask: string = "build:prod",
     forceInstallNpm: boolean = false,
     includeDirs: string = "",
+    includeFiles: string = "",
     nodeVersion: string = "20.9.0",
   ): Directory {
     const forceParameter = "--force";
@@ -91,23 +93,34 @@ class NodeTools {
       .withExec(npmInstallCli)
       .withExec(["npm", "run", buildTask]);
 
+    // Explode includeFiles with comma separator
+    const files = includeFiles.split(",");
+    // Initial base directory
+    let returnedDirectory = buildImage.directory("/src/dist");
+
+    if (files.length > 0) {
+      files.forEach((file) => {
+        const paths = file.split(":");
+        returnedDirectory = returnedDirectory.withFile(
+          paths[0],
+          buildImage.file(paths[1]),
+        );
+      });
+    }
+
     // Explode includeDirs with comma separator
     const dirs = includeDirs.split(",");
     if (dirs.length > 0) {
-      let directories = buildImage.directory("/src/dist");
-
       dirs.forEach((dir) => {
         const paths = dir.split(":");
-        directories = directories.withDirectory(
+        returnedDirectory = returnedDirectory.withDirectory(
           paths[0],
           buildImage.directory(paths[1]),
         );
       });
-
-      return directories;
-    } else {
-      return buildImage.directory("/src/dist");
     }
+
+    return returnedDirectory;
   }
 
   /**
@@ -128,6 +141,7 @@ class NodeTools {
    * @param buildTask Build task to run in package.json
    * @param forceInstallNpm Force install npm packages (depends the project)
    * @param includeDirs Include directories in the build
+   * @param includeFiles Include files in the build
    * @returns Exported tgz file
    */
   @func()
@@ -136,12 +150,14 @@ class NodeTools {
     buildTask: string = "build:prod",
     forceInstallNpm: boolean = false,
     includeDirs: string = "",
+    includeFiles: string = "",
   ): File {
     const build = this.buildBackend(
       source,
       buildTask,
       forceInstallNpm,
       includeDirs,
+      includeFiles,
     );
 
     return this.archiveBackend(build);
@@ -259,6 +275,7 @@ class NodeTools {
    * @param buildTask Build task to run in package.json
    * @param forceInstallNpm Force install npm packages (depends the project)
    * @param includeDirs Include directories in the build
+   * @param includeFiles Include files in the build
    * @param cacheEnabled Enable cache busting
    * @returns Deployment output
    */
@@ -272,9 +289,16 @@ class NodeTools {
     buildTask: string = "build:prod",
     forceInstallNpm: boolean = false,
     includeDirs: string = "",
+    includeFiles: string = "",
     cacheEnabled: boolean = false,
   ): Promise<string> {
-    const tgz = this.exportTgz(source, buildTask, forceInstallNpm, includeDirs);
+    const tgz = this.exportTgz(
+      source,
+      buildTask,
+      forceInstallNpm,
+      includeDirs,
+      includeFiles,
+    );
     await this.prepareBackend(esshConfig, awsCredentials, sshKey, hostname);
     await this.uploadTgz(
       tgz,
