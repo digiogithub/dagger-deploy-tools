@@ -93,12 +93,12 @@ class NodeTools {
       .withExec(npmInstallCli)
       .withExec(["npm", "run", buildTask]);
 
-    // Explode includeFiles with comma separator
-    const files = includeFiles.split(",");
     // Initial base directory
     let returnedDirectory = buildImage.directory("/src/dist");
 
-    if (files.length > 0) {
+    // Explode includeFiles with comma separator
+    const files = includeFiles.split(",");
+    if (files.length > 0 && files[0] !== "") {
       files.forEach((file) => {
         const paths = file.split(":");
         returnedDirectory = returnedDirectory.withFile(
@@ -110,7 +110,7 @@ class NodeTools {
 
     // Explode includeDirs with comma separator
     const dirs = includeDirs.split(",");
-    if (dirs.length > 0) {
+    if (dirs.length > 0 && dirs[0] !== "") {
       dirs.forEach((dir) => {
         const paths = dir.split(":");
         returnedDirectory = returnedDirectory.withDirectory(
