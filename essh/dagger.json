@@ -1,0 +1,6 @@
+{
+  "name": "EsshTasks",
+  "sdk": "typescript",
+  "source": "typescript",
+  "engineVersion": "v0.9.10"
+}
