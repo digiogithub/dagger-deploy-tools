@@ -45,6 +45,7 @@ class EsshTasks {
       .withFile("/root/.aws/credentials", awsCredentials)
       .withFile("/root/.ssh/id_rsa", sshKey)
       .withEnvVariable("CACHEBUSTER", cacheBuster)
+      .withExec(["chmod", "400", "/root/.ssh/id_rsa"])
       .withExec(["essh", task, taskParams])
       .stdout();
   }
