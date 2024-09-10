@@ -53,8 +53,9 @@ class Meteor {
         owner: "meteor",
       })
       .withExec(["npm", "install"])
-      .withEnvVariable("NODE_TLS_REJECT_UNAUTHORIZED", "0")
-      .withEnvVariable("METEOR_DISABLE_OPTIMISTIC_CACHING", "1")
+      .withEnvVariable("NODE_TLS_REJECT_UNAUTHORIZED", "0") // Disable npm ssl errors
+      .withEnvVariable("METEOR_DISABLE_OPTIMISTIC_CACHING", "1") // looking the docs this setting improve the memory consumption in build
+      .withEnvVariable("METEOR_HEADLESS", "1") // Seen in Meteor Up build code process in github
       .withExec([
         "meteor",
         "build",
