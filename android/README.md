@@ -13,6 +13,14 @@ jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore /$KEYSTORE -sto
 java -jar /usr/bin/bundletool.jar build-apks --bundle=`find app/build/outputs/ -wholename "*.aab"` --output=`find app/build/outputs/ -wholename "*.aab" | grep -oP ".*(?=[.])"`.apks --overwrite --mode=universal --ks /$KEYSTORE --ks-key-alias ivoox --ks-pass=pass:$KEYSTORE_PASS
 unzip `find -name "*.apks"` -d app/build/outputs/bundle
 ```
+## Ionic
+
+```
+npm install
+ionic capacitor build android --no-open --prod
+cd android && ./gradlew assembleRelease
+# results in /app/android/app/build/outputs/apk/release/app-release-unsigned.apk
+```
 
 ## Tasks
 

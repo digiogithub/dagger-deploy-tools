@@ -35,4 +35,24 @@ class Android {
       .withExec(command.split(" "))
       .directory("/app/" + exportDirectory);
   }
+
+  @func() ionic(src: Directory): Container {
+    return (
+      dag
+        .container()
+        .from("digiosysops/android-build:latest")
+        .withEnvVariable("NVM_DIR", "/usr/local/nvm")
+        //Install nodejs
+        .withExec([
+          "/bin/bash",
+          "-c",
+          '[ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh"',
+        ])
+        .withExec(["nvm", "install", "--lts"])
+        //Install ionic
+        .withExec(["npm", "install", "-g", "@ionic/cli"])
+        .withDirectory("/app", src)
+        .withWorkdir("/app")
+    );
+  }
 }
