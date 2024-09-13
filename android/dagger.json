@@ -1,0 +1,5 @@
+{
+  "name": "android",
+  "sdk": "typescript",
+  "engineVersion": "v0.12.5"
+}
