@@ -2,7 +2,14 @@
  * A generated module for Android functions
  *
  */
-import { dag, Container, Directory, object, func } from "@dagger.io/dagger";
+import {
+  dag,
+  Container,
+  Directory,
+  object,
+  func,
+  Secret,
+} from "@dagger.io/dagger";
 
 @object()
 class Android {
@@ -37,22 +44,29 @@ class Android {
   }
 
   @func() ionic(src: Directory): Container {
-    return (
-      dag
-        .container()
-        .from("digiosysops/android-build:latest")
-        .withEnvVariable("NVM_DIR", "/usr/local/nvm")
-        //Install nodejs
-        .withExec([
-          "/bin/bash",
-          "-c",
-          '[ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh"',
-        ])
-        .withExec(["nvm", "install", "--lts"])
-        //Install ionic
-        .withExec(["npm", "install", "-g", "@ionic/cli"])
-        .withDirectory("/app", src)
-        .withWorkdir("/app")
-    );
+    const gradleCache = dag.cacheVolume("gradle-cache");
+    return dag
+      .container()
+      .from("digiosysops/android-build:ionic-latest")
+      .withDirectory("/app", src)
+      .withWorkdir("/app")
+      .withMountedCache("/root/.gradle", gradleCache);
+  }
+
+  @func() ionicXcTask(src: Directory, xcBuildTask: string): Container {
+    return this.ionic(src).withExec(["xc", xcBuildTask]);
+  }
+
+  @func() async ionicXcTaskWithPass(
+    src: Directory,
+    xcBuildTask: string,
+    pass: Secret,
+  ): Promise<Container> {
+    const passStr = await pass.plaintext();
+    return this.ionic(src).withExec(["xc", xcBuildTask, passStr]);
+  }
+
+  @func() ionicNpmTask(src: Directory, npmTask: string): Container {
+    return this.ionic(src).withExec(["npm", npmTask]);
   }
 }
