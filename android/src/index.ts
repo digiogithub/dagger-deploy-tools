@@ -45,11 +45,13 @@ class Android {
 
   @func() ionic(src: Directory): Container {
     const gradleCache = dag.cacheVolume("gradle-cache");
+    const nodeModulesCache = dag.cacheVolume("node-modules-cache");
     return dag
       .container()
       .from("digiosysops/android-build:ionic-latest")
       .withDirectory("/app", src)
       .withWorkdir("/app")
+      .withMountedCache("/app/node_modules", nodeModulesCache)
       .withMountedCache("/root/.gradle", gradleCache);
   }
 
