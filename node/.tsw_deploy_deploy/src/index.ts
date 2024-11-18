@@ -3,8 +3,10 @@ import {
   Container,
   File,
   Directory,
+  Secret,
   object,
   func,
+  entrypoint,
 } from "@dagger.io/dagger";
 
 @object()
@@ -122,6 +124,110 @@ class NodeTools {
 
     return returnedDirectory;
   }
+
+  /**
+   * Tag image and push to registry
+   *
+   * @param source Source directory
+   * @param registryPath The Container Registry path
+   * @param registryLogin Registry login
+   * @param registryPassword Registry password
+   * @param tagVersion Tag version
+   * @param entrypoint Entrypoint to use
+   * @param buildTask Build task to run in package.json
+   * @param forceInstallNpm Force install npm packages (depends the project)
+   * @param includeDirs Include directories in the build
+   * @param includeFiles Include files in the build
+   * @returns The urls of the pushed images
+   */
+  @func()
+  async tagAndPush(
+    source: Directory,
+    registryPath: string,
+    registryLogin: string,
+    registryPassword: Secret,
+    tagVersion: string,
+    entrypoint: string = "npm run start:prod",
+    buildTask: string = "build:prod",
+    forceInstallNpm: boolean = false,
+    includeDirs: string = "",
+    includeFiles: string = "",
+    nodeVersion: string = "20.9.0"
+  ): Promise<string[]> {
+    // Get registry domain from path
+    const registry = registryPath.split("/")[0];
+
+    // Create final container with the build
+    const finalContainer = await this.containerBackend(
+      source,
+      tagVersion,
+      entrypoint,
+      buildTask,
+      forceInstallNpm,
+      includeDirs,
+      includeFiles,
+      nodeVersion
+    );
+    finalContainer.withRegistryAuth(registry, registryLogin, registryPassword);
+
+    // Push with multiple tags
+    const tags = ["latest", tagVersion];
+    const addr: string[] = [];
+    
+    for (const tag of tags) {
+      const publishedAddr = await finalContainer.publish(`${registryPath}:${tag}`);
+      addr.push(publishedAddr);
+    }
+
+    return addr;
+  }
+
+  /**
+   * Create a container with the build
+   *
+   * @param source Source directory
+   * @param tagVersion Tag version
+   * @param entrypoint Entrypoint to use
+   * @param buildTask Build task to run in package.json
+   * @param forceInstallNpm Force install npm packages (depends the project)
+   * @param includeDirs Include directories in the build
+   * @param includeFiles Include files in the build
+   * @param nodeVersion Node version to use
+   * @returns Container
+   */
+  @func()
+  async containerBackend(
+    source: Directory,
+    tagVersion: string,
+    entrypoint: string = "npm run start:prod",
+    buildTask: string = "build:prod",
+    forceInstallNpm: boolean = false,
+    includeDirs: string = "",
+    includeFiles: string = "",
+    nodeVersion: string = "20.9.0"
+  ): Promise<Container> {
+
+    // Build the application
+    const buildDir = this.buildBackend(
+      source,
+      buildTask,
+      forceInstallNpm,
+      includeDirs,
+      includeFiles,
+      nodeVersion
+    );
+
+    // Create final container with the build
+    const finalContainer = dag
+      .container()
+      .from(`node:${nodeVersion}-slim`)
+      .withWorkdir("/app")
+      .withDirectory("/app", buildDir)
+      .withEntrypoint(entrypoint.split(" "));
+
+    return finalContainer;
+  }
+
 
   /**
    * Zip the build directory
