@@ -221,6 +221,9 @@ class NodeTools {
     const finalContainer = dag
       .container()
       .from(`node:${nodeVersion}-slim`)
+      .withExec(["apt-get", "update"])
+      .withExec(["apt-get", "install", "-y", "procps"])
+      .withExec(["rm", "-rf", "/var/lib/apt/lists/*"])
       .withWorkdir("/app")
       .withDirectory("/app", buildDir)
       .withEntrypoint(entrypoint.split(" "));
