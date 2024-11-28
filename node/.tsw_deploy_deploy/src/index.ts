@@ -138,6 +138,8 @@ class NodeTools {
    * @param forceInstallNpm Force install npm packages (depends the project)
    * @param includeDirs Include directories in the build
    * @param includeFiles Include files in the build
+   * @param nodeVersion Node version to use
+   * @param alternativeImage Alternative container image to use (defaults to node:NODE_VERSION-slim which replaces NODE_VERSION with nodeVersion)
    * @returns The urls of the pushed images
    */
   @func()
@@ -152,10 +154,15 @@ class NodeTools {
     forceInstallNpm: boolean = false,
     includeDirs: string = "",
     includeFiles: string = "",
-    nodeVersion: string = "20.9.0"
+    nodeVersion: string = "20.9.0",
+    alternativeImage: string = "node:NODE_VERSION-slim"
   ): Promise<string[]> {
     // Get registry domain from path
     const registry = registryPath.split("/")[0];
+
+    const imageToUse = alternativeImage === "node:NODE_VERSION-slim" 
+      ? `node:${nodeVersion}-slim`
+      : alternativeImage;
 
     // Create final container with the build
     const finalContainer = await this.containerBackend(
@@ -166,14 +173,15 @@ class NodeTools {
       forceInstallNpm,
       includeDirs,
       includeFiles,
-      nodeVersion
+      nodeVersion,
+      imageToUse
     );
     finalContainer.withRegistryAuth(registry, registryLogin, registryPassword);
 
     // Push with multiple tags
     const tags = ["latest", tagVersion];
     const addr: string[] = [];
-    
+
     for (const tag of tags) {
       const publishedAddr = await finalContainer.publish(`${registryPath}:${tag}`);
       addr.push(publishedAddr);
@@ -193,6 +201,7 @@ class NodeTools {
    * @param includeDirs Include directories in the build
    * @param includeFiles Include files in the build
    * @param nodeVersion Node version to use
+   * @param alternativeImage Alternative container image to use (defaults to node:NODE_VERSION-slim which replaces NODE_VERSION with nodeVersion)
    * @returns Container
    */
   @func()
@@ -204,7 +213,8 @@ class NodeTools {
     forceInstallNpm: boolean = false,
     includeDirs: string = "",
     includeFiles: string = "",
-    nodeVersion: string = "20.9.0"
+    nodeVersion: string = "20.9.0",
+    alternativeImage: string = "node:NODE_VERSION-slim"
   ): Promise<Container> {
 
     // Build the application
@@ -217,16 +227,25 @@ class NodeTools {
       nodeVersion
     );
 
+    const imageToUse = alternativeImage === "node:NODE_VERSION-slim" 
+      ? `node:${nodeVersion}-slim`
+      : alternativeImage;
+
     // Create final container with the build
-    const finalContainer = dag
+    let finalContainer = dag
       .container()
-      .from(`node:${nodeVersion}-slim`)
-      .withExec(["apt-get", "update"])
-      .withExec(["apt-get", "install", "-y", "procps"])
-      .withExec(["rm", "-rf", "/var/lib/apt/lists/*"])
+      .from(imageToUse)
       .withWorkdir("/app")
       .withDirectory("/app", buildDir)
       .withEntrypoint(entrypoint.split(" "));
+    
+    // only for node:NODE_VERSION-slim
+    if (alternativeImage === "node:NODE_VERSION-slim") {
+      finalContainer = finalContainer
+        .withExec(["apt-get", "update"])
+        .withExec(["apt-get", "install", "-y", "procps"])
+        .withExec(["rm", "-rf", "/var/lib/apt/lists/*"]);
+    }
 
     return finalContainer;
   }
