@@ -8,6 +8,7 @@ import {
   func,
   entrypoint,
 } from "@dagger.io/dagger";
+import { node } from "@opentelemetry/sdk-node";
 
 @object()
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -270,6 +271,7 @@ class NodeTools {
    * @param forceInstallNpm Force install npm packages (depends the project)
    * @param includeDirs Include directories in the build
    * @param includeFiles Include files in the build
+   * @param nodeVersion Node version to use
    * @returns Exported tgz file
    */
   @func()
@@ -279,6 +281,7 @@ class NodeTools {
     forceInstallNpm: boolean = false,
     includeDirs: string = "",
     includeFiles: string = "",
+    nodeVersion: string = "20.0.9",
   ): File {
     const build = this.buildBackend(
       source,
@@ -286,6 +289,7 @@ class NodeTools {
       forceInstallNpm,
       includeDirs,
       includeFiles,
+      nodeVersion,
     );
 
     return this.archiveBackend(build);
@@ -415,6 +419,7 @@ class NodeTools {
     sshKey: File,
     hostname: string,
     buildTask: string = "build:prod",
+    nodeVersion: string = "20.0.9",
     forceInstallNpm: boolean = false,
     includeDirs: string = "",
     includeFiles: string = "",
@@ -426,6 +431,7 @@ class NodeTools {
       forceInstallNpm,
       includeDirs,
       includeFiles,
+      nodeVersion,
     );
     await this.prepareBackend(esshConfig, awsCredentials, sshKey, hostname);
     await this.uploadTgz(
