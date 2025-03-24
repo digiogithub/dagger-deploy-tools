@@ -314,6 +314,7 @@ class NodeTools {
     sshKey: File,
     hostname: string,
     cacheEnabled: boolean = false,
+    deployPath: string = "/home/ubuntu/.deploy/",
   ): Promise<string> {
     const name = await tgz.name();
 
@@ -330,7 +331,7 @@ class NodeTools {
       .withFile("/root/.aws/credentials", awsCredentials)
       .withFile("/root/.ssh/id_rsa", sshKey)
       .withEnvVariable("CACHEBUSTER", cacheBuster)
-      .withExec(["essh", "deploy:upload", hostname])
+      .withExec(["essh", "deploy:upload", hostname, deployPath])
       .stdout();
 
     return prepare;
@@ -351,6 +352,7 @@ class NodeTools {
     awsCredentials: File,
     sshKey: File,
     hostname: string,
+    deployPath: string = "/home/ubuntu/.deploy/",
   ): Promise<string> {
     return dag
       .container()
@@ -358,7 +360,7 @@ class NodeTools {
       .withFile("/root/.essh/config.lua", esshConfig)
       .withFile("/root/.aws/credentials", awsCredentials)
       .withFile("/root/.ssh/id_rsa", sshKey)
-      .withExec(["essh", "deploy:prepare", hostname])
+      .withExec(["essh", "deploy:prepare", hostname, deployPath])
       .stdout();
   }
 
@@ -379,6 +381,7 @@ class NodeTools {
     sshKey: File,
     hostname: string,
     cacheEnabled: boolean = false,
+    deployPath: string = "/home/ubuntu/.deploy/",
   ): Promise<string> {
     let cacheBuster = "";
     if (!cacheEnabled) {
@@ -392,7 +395,7 @@ class NodeTools {
       .withFile("/root/.aws/credentials", awsCredentials)
       .withFile("/root/.ssh/id_rsa", sshKey)
       .withEnvVariable("CACHEBUSTER", cacheBuster)
-      .withExec(["essh", "deploy:extract", hostname])
+      .withExec(["essh", "deploy:extract", hostname, deployPath])
       .stdout();
   }
 
@@ -409,6 +412,7 @@ class NodeTools {
    * @param includeDirs Include directories in the build
    * @param includeFiles Include files in the build
    * @param cacheEnabled Enable cache busting
+   * @param deployPath Deploy path
    * @returns Deployment output
    */
   @func()
@@ -424,6 +428,7 @@ class NodeTools {
     includeDirs: string = "",
     includeFiles: string = "",
     cacheEnabled: boolean = false,
+    deployPath: string = "/home/ubuntu/.deploy/",
   ): Promise<string> {
     const tgz = this.exportTgz(
       source,
@@ -433,7 +438,7 @@ class NodeTools {
       includeFiles,
       nodeVersion,
     );
-    await this.prepareBackend(esshConfig, awsCredentials, sshKey, hostname);
+    await this.prepareBackend(esshConfig, awsCredentials, sshKey, hostname, deployPath);
     await this.uploadTgz(
       tgz,
       esshConfig,
@@ -441,6 +446,7 @@ class NodeTools {
       sshKey,
       hostname,
       cacheEnabled,
+      deployPath
     );
     return await this.extractBackend(
       esshConfig,
@@ -448,6 +454,7 @@ class NodeTools {
       sshKey,
       hostname,
       cacheEnabled,
+      deployPath
     );
   }
 
@@ -468,6 +475,7 @@ class NodeTools {
     sshKey: File,
     hostname: string,
     cacheEnabled: boolean = false,
+    deployPath: string = "/home/ubuntu/.deploy/",
   ): Promise<string> {
     let cacheBuster = "";
     if (!cacheEnabled) {
@@ -481,7 +489,7 @@ class NodeTools {
       .withFile("/root/.aws/credentials", awsCredentials)
       .withFile("/root/.ssh/id_rsa", sshKey)
       .withEnvVariable("CACHEBUSTER", cacheBuster)
-      .withExec(["essh", "deploy:rollback", hostname])
+      .withExec(["essh", "deploy:rollback", hostname, deployPath])
       .stdout();
   }
 
@@ -504,6 +512,7 @@ class NodeTools {
     hostname: string,
     task: string,
     cacheEnabled: boolean = false,
+    deployPath: string = "/home/ubuntu/.deploy/",
   ): Promise<string> {
     let cacheBuster = "";
     if (!cacheEnabled) {
@@ -517,7 +526,7 @@ class NodeTools {
       .withFile("/root/.aws/credentials", awsCredentials)
       .withFile("/root/.ssh/id_rsa", sshKey)
       .withEnvVariable("CACHEBUSTER", cacheBuster)
-      .withExec(["essh", task, hostname])
+      .withExec(["essh", task, hostname, deployPath])
       .stdout();
   }
 }
