@@ -19,6 +19,7 @@ class NodeTools {
    * @param source Source directory
    * @param buildTask Build task to run in package.json
    * @param forceInstallNpm Force install npm packages (depends the project)
+   * @param useLegacyPeerDeps Use --legacy-peer-deps flag for npm install
    * @param includeNodeModules Include node_modules directory in the build
    * @param nodeVersion Node version to use
    * @returns Directory
@@ -28,14 +29,19 @@ class NodeTools {
     source: Directory,
     buildTask: string = "build:prod",
     forceInstallNpm: boolean = false,
+    useLegacyPeerDeps: boolean = false,
     includeNodeModules: boolean = false,
     nodeVersion: string = "20.9.0",
   ): Directory {
     const forceParameter = "--force";
+    const legacyPeerDepsParameter = "--legacy-peer-deps";
 
     let npmInstallCli: string[] = ["npm", "install"];
     if (forceInstallNpm) {
       npmInstallCli = npmInstallCli.concat(forceParameter);
+    }
+    if (useLegacyPeerDeps) {
+      npmInstallCli = npmInstallCli.concat(legacyPeerDepsParameter);
     }
 
     const buildImage = dag
@@ -66,6 +72,7 @@ class NodeTools {
    * @param source Source directory
    * @param buildTask Build task to run in package.json
    * @param forceInstallNpm Force install npm packages (depends the project)
+   * @param useLegacyPeerDeps Use --legacy-peer-deps flag for npm install
    * @param includeDirs Include directories in the build
    * @param includeFiles Include files in the build
    * @param nodeVersion Node version to use
@@ -76,15 +83,20 @@ class NodeTools {
     source: Directory,
     buildTask: string = "build:prod",
     forceInstallNpm: boolean = false,
+    useLegacyPeerDeps: boolean = false,
     includeDirs: string = "",
     includeFiles: string = "",
     nodeVersion: string = "20.9.0",
   ): Directory {
     const forceParameter = "--force";
+    const legacyPeerDepsParameter = "--legacy-peer-deps";
 
     let npmInstallCli: string[] = ["npm", "install"];
     if (forceInstallNpm) {
       npmInstallCli = npmInstallCli.concat(forceParameter);
+    }
+    if (useLegacyPeerDeps) {
+      npmInstallCli = npmInstallCli.concat(legacyPeerDepsParameter);
     }
 
     const buildImage = dag
@@ -137,6 +149,7 @@ class NodeTools {
    * @param entrypoint Entrypoint to use
    * @param buildTask Build task to run in package.json
    * @param forceInstallNpm Force install npm packages (depends the project)
+   * @param useLegacyPeerDeps Use --legacy-peer-deps flag for npm install
    * @param includeDirs Include directories in the build
    * @param includeFiles Include files in the build
    * @param nodeVersion Node version to use
@@ -153,6 +166,7 @@ class NodeTools {
     entrypoint: string = "npm run start:prod",
     buildTask: string = "build:prod",
     forceInstallNpm: boolean = false,
+    useLegacyPeerDeps: boolean = false,
     includeDirs: string = "",
     includeFiles: string = "",
     nodeVersion: string = "20.9.0",
@@ -172,6 +186,7 @@ class NodeTools {
       entrypoint,
       buildTask,
       forceInstallNpm,
+      useLegacyPeerDeps,
       includeDirs,
       includeFiles,
       nodeVersion,
@@ -199,6 +214,7 @@ class NodeTools {
    * @param entrypoint Entrypoint to use
    * @param buildTask Build task to run in package.json
    * @param forceInstallNpm Force install npm packages (depends the project)
+   * @param useLegacyPeerDeps Use --legacy-peer-deps flag for npm install
    * @param includeDirs Include directories in the build
    * @param includeFiles Include files in the build
    * @param nodeVersion Node version to use
@@ -212,6 +228,7 @@ class NodeTools {
     entrypoint: string = "npm run start:prod",
     buildTask: string = "build:prod",
     forceInstallNpm: boolean = false,
+    useLegacyPeerDeps: boolean = false,
     includeDirs: string = "",
     includeFiles: string = "",
     nodeVersion: string = "20.9.0",
@@ -223,6 +240,7 @@ class NodeTools {
       source,
       buildTask,
       forceInstallNpm,
+      useLegacyPeerDeps,
       includeDirs,
       includeFiles,
       nodeVersion
@@ -269,6 +287,7 @@ class NodeTools {
    * @param source Source directory
    * @param buildTask Build task to run in package.json
    * @param forceInstallNpm Force install npm packages (depends the project)
+   * @param useLegacyPeerDeps Use --legacy-peer-deps flag for npm install
    * @param includeDirs Include directories in the build
    * @param includeFiles Include files in the build
    * @param nodeVersion Node version to use
@@ -279,6 +298,7 @@ class NodeTools {
     source: Directory,
     buildTask: string = "build:prod",
     forceInstallNpm: boolean = false,
+    useLegacyPeerDeps: boolean = false,
     includeDirs: string = "",
     includeFiles: string = "",
     nodeVersion: string = "20.0.9",
@@ -287,6 +307,7 @@ class NodeTools {
       source,
       buildTask,
       forceInstallNpm,
+      useLegacyPeerDeps,
       includeDirs,
       includeFiles,
       nodeVersion,
@@ -409,6 +430,7 @@ class NodeTools {
    * @param hostname SSH hostname
    * @param buildTask Build task to run in package.json
    * @param forceInstallNpm Force install npm packages (depends the project)
+   * @param useLegacyPeerDeps Use --legacy-peer-deps flag for npm install
    * @param includeDirs Include directories in the build
    * @param includeFiles Include files in the build
    * @param cacheEnabled Enable cache busting
@@ -425,6 +447,7 @@ class NodeTools {
     buildTask: string = "build:prod",
     nodeVersion: string = "20.0.9",
     forceInstallNpm: boolean = false,
+    useLegacyPeerDeps: boolean = false,
     includeDirs: string = "",
     includeFiles: string = "",
     cacheEnabled: boolean = false,
@@ -434,6 +457,7 @@ class NodeTools {
       source,
       buildTask,
       forceInstallNpm,
+      useLegacyPeerDeps,
       includeDirs,
       includeFiles,
       nodeVersion,
